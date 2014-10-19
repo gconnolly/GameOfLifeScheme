@@ -1,10 +1,4 @@
-(define (contains? element set)
-	(cond
-		((null? set) #f)
-		((equal? element (car set)) #t)
-	    (else (contains? element (cdr set)))
-	)
-)
+;;;functions to manage a set of tuples
 
 (define (add-to-set element set)
 	(cond 
@@ -24,49 +18,51 @@
 (define (intersection-count set1 set2)
 	(cond
 		((null? set1) 0)
-		((contains? (car set1) set2) (+ 1 (intersection-count (cdr set1) set2)))
+		((member (car set1) set2) (+ 1 (intersection-count (cdr set1) set2)))
 		(else (intersection-count (cdr set1) set2))
 	)
 )
 
+;;;functions to execute conway's game of life
+
 (define (get-neighbors cell)
 	(list
-		(list (+ (car cell) 1) 	(+ (cadr cell) 1)	)
+		(list (+ (car cell) 1)	(+ (cadr cell) 1)	)
 		(list (+ (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (+ (car cell) 1) 	(cadr cell)			)
+		(list (+ (car cell) 1) 	(cadr cell)		)
 
 		(list (- (car cell) 1) 	(+ (cadr cell) 1)	)
 		(list (- (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (- (car cell) 1) 	(cadr cell)			)
+		(list (- (car cell) 1) 	(cadr cell)		)
 
-		(list (car cell) 		(+ (cadr cell) 1)	)
-		(list (car cell) 		(- (cadr cell) 1)	)
+		(list (car cell) 	(+ (cadr cell) 1)	)
+		(list (car cell) 	(- (cadr cell) 1)	)
 	)
 )
 
-(define (determine-fate-of-cell cell living-cells)
+(define (cell-will-live? cell living-cells)
 	(define neighbor-count (intersection-count (get-neighbors cell) living-cells))
-	(cond
-		((contains? cell living-cells)
-			(cond
-				((or (= 3 neighbor-count) (= 2 neighbor-count)) #t)
-				(else #f)
+	(or 
+		(and 
+			(member cell living-cells) 
+			(or 
+				(= 3 neighbor-count) 
+				(= 2 neighbor-count)
 			)
-		)
-		(else
-			(cond
-				((= 3 neighbor-count) #t)
-				(else #f)
-			)
-		)
+		) 
+		(= 3 neighbor-count)
 	)
 )
 
 (define (determine-fate-of-cells cells living-cells)
 	(cond
 		((null? cells) '())
-		((equal? #t (determine-fate-of-cell (car cells) living-cells)) (cons (car cells) (determine-fate-of-cells (cdr cells) living-cells)))
-		(else (determine-fate-of-cells (cdr cells) living-cells))
+		((cell-will-live? (car cells) living-cells) 
+			(cons (car cells) (determine-fate-of-cells (cdr cells) living-cells))
+		)
+		(else 
+			(determine-fate-of-cells (cdr cells) living-cells)
+		)
 	)
 )
 
@@ -89,6 +85,46 @@
 	(determine-fate-of-cells (reduce-to-set (get-cells-to-inspect living-cells) ) living-cells)
 )
 
-(evolve '((1 2) (2 4) (3 1) (3 2) (3 5) (3 6) (3 7)))
+;;;functions to draw a bounded grid of the current state
 
-(evolve '((1 2) (2 3) (3 1) (3 2) (3 3)))
+(define (draw-tuple-grid ominX minX maxX minY maxY set)
+	(cond
+		((and (> minX maxX) (> minY maxY)) "")
+		((> minX maxX)
+			(string-append 
+				(draw-tuple-grid ominX ominX maxX (+ 1 minY) maxY set)
+				(string #\newline)
+			)
+		)			
+		(else
+			(string-append 
+				(draw-tuple-grid ominX (+ 1 minX) maxX minY maxY set)
+				(cond ((member (list minX minY) set) "8") (else  "0") )
+			)
+		)
+	)
+)
+
+(define (all-x set)
+	(map (lambda (e) (car e)) set)
+)
+
+(define (all-y set)
+	(map (lambda (e) (cadr e)) set)
+)
+
+(define (draw-tuple-set set)
+	;Determine bounding rectangle
+	(define minX (apply min (all-x set)))
+	(define maxX (apply max (all-x set)))
+	(define minY (apply min (all-y set)))
+	(define maxY (apply max (all-y set)))
+
+	(draw-tuple-grid minX minX maxX minY maxY set)
+)
+
+;;;functions to demonstrate usage
+
+(draw-tuple-set (evolve '((1 2) (2 4) (3 1) (3 2) (3 5) (3 6) (3 7))))
+
+(draw-tuple-set (evolve '((1 2) (2 3) (3 1) (3 2) (3 3))))
