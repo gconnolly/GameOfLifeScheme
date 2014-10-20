@@ -96,40 +96,47 @@
 
 ;;;functions to draw a bounded grid of the current state
 
-(define (draw-tuple-grid ominX minX maxX minY maxY set)
+(define (draw-tuple-grid bounding-rectangle x y set)
+	(define maxX (caadr bounding-rectangle))
+	(define maxY (cadadr bounding-rectangle))
 	(cond
-		((and (> minX maxX) (> minY maxY)) "")
-		((> minX maxX)
+		((and (> x maxX) (> y maxY)) "")
+		((> x maxX)
 			(string-append 
-				(draw-tuple-grid ominX ominX maxX (+ 1 minY) maxY set)
+				(draw-tuple-grid bounding-rectangle (caar bounding-rectangle) (+ 1 y) set)
 				(string #\newline)
 			)
 		)			
 		(else
 			(string-append 
-				(draw-tuple-grid ominX (+ 1 minX) maxX minY maxY set)
-				(cond ((member (list minX minY) set) "*") (else  " ") )
+				(draw-tuple-grid bounding-rectangle (+ 1 x) y set)
+				(cond ((member (list x y) set) "*") (else  " ") )
 			)
 		)
 	)
 )
 
-(define (all-x set)
-	(map (lambda (e) (car e)) set)
-)
-
-(define (all-y set)
-	(map (lambda (e) (cadr e)) set)
+(define (get-bounding-rectangle set)
+	(list
+		(list
+			(apply min (map car set))	; min x
+			(apply min (map cadr set))	; min y
+		)
+		(list 
+			(apply max (map car set))	; max x
+			(apply max (map cadr set))	; max y
+		)
+	)
 )
 
 (define (draw-tuple-set set)
-	;Determine bounding rectangle
-	(define minX (apply min (all-x set)))
-	(define maxX (apply max (all-x set)))
-	(define minY (apply min (all-y set)))
-	(define maxY (apply max (all-y set)))
-
-	(draw-tuple-grid minX minX maxX minY maxY set)
+	(define bounding-rectangle (get-bounding-rectangle set))
+	(draw-tuple-grid 
+		bounding-rectangle 
+		(caar bounding-rectangle)	; min x
+		(cadar bounding-rectangle)	; min y
+		set
+	)
 )
 
 ;;;functions execute from command-line-interpreter
