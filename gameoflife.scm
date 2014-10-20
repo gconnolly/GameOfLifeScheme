@@ -29,14 +29,14 @@
 	(list
 		(list (+ (car cell) 1) 	(+ (cadr cell) 1)	)
 		(list (+ (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (+ (car cell) 1) 	(cadr cell)			)
+		(list (+ (car cell) 1) 	(cadr cell)		)
 
 		(list (- (car cell) 1) 	(+ (cadr cell) 1)	)
 		(list (- (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (- (car cell) 1) 	(cadr cell)			)
+		(list (- (car cell) 1) 	(cadr cell)		)
 
-		(list (car cell) 		(+ (cadr cell) 1)	)
-		(list (car cell) 		(- (cadr cell) 1)	)
+		(list (car cell)	(+ (cadr cell) 1)	)
+		(list (car cell)	(- (cadr cell) 1)	)
 	)
 )
 
