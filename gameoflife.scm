@@ -27,16 +27,16 @@
 
 (define (get-neighbors cell)
 	(list
-		(list (+ (car cell) 1)	(+ (cadr cell) 1)	)
+		(list (+ (car cell) 1) 	(+ (cadr cell) 1)	)
 		(list (+ (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (+ (car cell) 1) 	(cadr cell)		)
+		(list (+ (car cell) 1) 	(cadr cell)			)
 
 		(list (- (car cell) 1) 	(+ (cadr cell) 1)	)
 		(list (- (car cell) 1) 	(- (cadr cell) 1)	)
-		(list (- (car cell) 1) 	(cadr cell)		)
+		(list (- (car cell) 1) 	(cadr cell)			)
 
-		(list (car cell) 	(+ (cadr cell) 1)	)
-		(list (car cell) 	(- (cadr cell) 1)	)
+		(list (car cell) 		(+ (cadr cell) 1)	)
+		(list (car cell) 		(- (cadr cell) 1)	)
 	)
 )
 
@@ -85,6 +85,15 @@
 	(determine-fate-of-cells (reduce-to-set (get-cells-to-inspect living-cells) ) living-cells)
 )
 
+(define (repeat func val times)
+	(cond
+		((= 0 times) val)
+		(else
+			(apply func (list (repeat func val (- times 1))))
+		)
+	)
+)
+
 ;;;functions to draw a bounded grid of the current state
 
 (define (draw-tuple-grid ominX minX maxX minY maxY set)
@@ -99,7 +108,7 @@
 		(else
 			(string-append 
 				(draw-tuple-grid ominX (+ 1 minX) maxX minY maxY set)
-				(cond ((member (list minX minY) set) "8") (else  "0") )
+				(cond ((member (list minX minY) set) "*") (else  " ") )
 			)
 		)
 	)
@@ -123,8 +132,17 @@
 	(draw-tuple-grid minX minX maxX minY maxY set)
 )
 
-;;;functions to demonstrate usage
+;;;functions execute from command-line-interpreter
 
-(draw-tuple-set (evolve '((1 2) (2 4) (3 1) (3 2) (3 5) (3 6) (3 7))))
-
-(draw-tuple-set (evolve '((1 2) (2 3) (3 1) (3 2) (3 3))))
+(define (main args) 
+	(print 
+		(draw-tuple-set 
+			(repeat 
+				evolve
+				'((1 2) (2 4) (3 1) (3 2) (3 5) (3 6) (3 7))
+				;'((1 2) (2 3) (3 1) (3 2) (3 3)) 
+				(string->number (car args))
+			)
+		)
+	)
+)
